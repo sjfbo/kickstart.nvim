@@ -204,6 +204,16 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- Function to run the current Elixir file
+local function run_elixir_file()
+  -- Get the path of the current file
+  local file = vim.fn.expand '%:p'
+  -- Command to execute the file using Elixir
+  vim.cmd('split | terminal elixir ' .. file)
+end
+
+vim.keymap.set('n', '<leader>-', run_elixir_file, { desc = 'Run Elixir file' })
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -617,8 +627,22 @@ require('lazy').setup({
         -- clangd = {},
         -- gopls = {},
         -- pyright = {},
-        -- rust_analyzer = {},
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
+        rust_analyzer = {
+          settings = {
+            ['rust-analyzer'] = {
+              assist = {
+                importGranularity = 'module',
+                importPrefix = 'by_self',
+              },
+              cargo = {
+                allFeatures = true,
+              },
+              procMacro = {
+                enable = true,
+              },
+            },
+          },
+        }, -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
@@ -638,6 +662,16 @@ require('lazy').setup({
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
               -- diagnostics = { disable = { 'missing-fields' } },
+            },
+          },
+        },
+        elixirls = {
+          cmd = { '/usr/local/Cellar/elixir-ls/0.24.1/libexec/language_server.sh' },
+          settings = {
+            elixirLS = {
+              dialyzerEnabled = false, -- Enable Dialyzer for static analysis
+              fetchDeps = false, -- Set to false if you don’t want the LSP to fetch dependencies automatically
+              suggestSpecs = true, -- Suggest @spec annotations for functions
             },
           },
         },
@@ -708,6 +742,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        elixir = { 'mix format' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
